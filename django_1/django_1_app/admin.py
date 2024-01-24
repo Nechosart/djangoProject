@@ -1,4 +1,5 @@
 from django.contrib import admin
-from .models import Product
+#from .models import Director, Film
 
-admin.site.register(Product)
+#admin.site.register(Director)
+#admin.site.register(Film)

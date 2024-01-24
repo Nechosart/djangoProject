@@ -1,10 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+<post>
+    <a href="/post/{{p.id}}" class="post">
+        <p>{{p.name}}</p>
+        <short>{{p.description}}</short>
+    </a><p></p>
+    <img src="/static/like.png" class="like" id="{{p.id}}" style="float:left">
+    <p style="padding-left: 6%;">{{p.likes.count}}</p>
+    <script>
+        var like = document.getElementById($p.id)
+        like.onclick = function() {
+            if (like.style.brightness === 0%) {
+                like.style.brightness = 20%;
+            } else {
+                like.style.brightness = 0%;
+            }
+
+            var button = $(this)
+            $.ajax(button.data('url'), {
+                'type': 'POST',
+                'async': true,
+                'dataType': 'json',
+                'data': {
+                    'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+                    'typeSend': 3
+                },
+                'success': function(data){
+
+                }
+            })
+        }
+    </script>
+</post>

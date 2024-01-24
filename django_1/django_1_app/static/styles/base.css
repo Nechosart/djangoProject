@@ -1,0 +1,110 @@
+a {
+    text-decoration: none;
+    color: black;
+}
+
+.main {
+    position: relative;
+    left: 0%;
+    height: 100%;
+    weight: 16%;
+    font-size: 24px;
+    display: inline-block;
+    padding: 20px;
+    border-radius: 12px;
+    margin: 4px;
+}
+
+.main:hover {
+    background: rgb(230, 230, 230);
+}
+
+mainName {
+    position: relative;
+    top: 2%;
+    font-style: "Lucida Console";
+    font-size: 30px;
+}
+
+leftSide {
+    position: absolute;
+    left: 0%;
+}
+
+centerSide {
+    position: absolute;
+    left: 30%;
+    top: 0px;
+    width: 30%;
+}
+
+rightSide {
+    position: absolute;
+    left: 75%;
+}
+
+post {
+    display: block;
+    block-size: 40%;
+    padding: 12px;
+    margin: 12px;
+    background-color: rgb(230,230,230);
+    border-radius: 12px;
+}
+
+divider {
+    display: block;
+    block-size: 40%;
+    padding: 12px;
+    margin: 12px;
+    background-color: rgb(204,204,255);
+    border-radius: 12px;
+}
+
+info {
+    font-size: 24px;
+    display: block;
+}
+
+divider {
+    font-size: 36px;
+}
+
+block {
+    position: relative;
+}
+
+.like {
+    width: 5%; min-width: 24px;
+    padding: 2%;
+    border-radius: 20%;
+}
+
+.like:hover {
+    background-color: rgb(204,204,204);
+}
+
+.buttonCreate {
+    display: inline-block;
+    padding: 12px;
+    font-size: 24px;
+    border-radius: 12px;
+    background-color: rgb(204,255,204);
+}
+
+.buttonCreate:hover {
+    background-color: rgb(230,255,230);
+}
+
+.buttonMove {
+    display: inline-block;
+    padding: 12px;
+    font-size: 24px;
+    border-radius: 12px;
+    background-color: rgb(255,255,204);
+}
+
+.buttonMove:hover {
+    background-color: rgb(255,255,230);
+}
+

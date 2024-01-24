@@ -1,10 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+{% block content %}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="/static/js/post.js"></script>
+
+<centerSide>
+
+    <post>
+        <info style="font-size: 36px;">{{person.username}}</info>
+        {% if person.username == user.username %}
+            <info>{{user.email}}</info>
+            <a href="/logout" class="buttonMove">Logout</a>
+        {% else %}
+            <a href="/chatNew/{{person.id}}" class="buttonCreate">Send a message</a>
+        {% endif %}
+    </post>
+
+    <divider>Posts</divider>
+
+    <post>
+        {% for p in posts %}
+            <info><a href="/post/{{p.id}}">{{p.text}}</a></info>
+        {% endfor %}
+    </post>
+
+</centerSide>
+
+{% endblock %}

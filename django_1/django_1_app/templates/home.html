@@ -1,10 +1,70 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{title}}</title>
-</head>
-<body>
-    <h1>{{name}}</h1>
-</body>
-</html>
+{% extends "base.html" %}
+{% block content %}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+<rightSide>
+    {% for u in users %}
+        <a href="/user/{{u.id}}">{{u.username}}</a>
+    {% endfor %}
+</rightSide>
+
+<centerSide>
+    {% for p in posts %}
+        <post>
+            <a href="/post/{{p.id}}" class="post">
+                <p>{{p.name}}</p>
+                <short>{{p.description}}</short>
+            </a><p></p>
+            <img src="/static/like.png" class="like" id="{{p.id}}" style="float:left">
+            <p style="padding-left: 6%;" id="{{p.id}}s">{{p.likes.count}}</p>
+            <script>
+                var like = $('#{{p.id}}');
+                var likes = {{p.likes.count}};
+                var likesEl = $('#{{p.id}}s');
+                likesEl.innerHTML = likes;
+
+                like.click(function(){
+                    if ({{user.id}}) {
+                        likesEl.innerHTML += 1;
+                        /*
+                        window.alert(likes, likesEl.innerHTML);
+                        if (like.style.backgroundColor == 'white') {
+                            like.style.backgroundColor = 'blue';
+                        } else {
+                            like.style.backgroundColor = 'white';
+                        }*/
+
+                        var button = $(this)
+                        $.ajax(button.data('url'), {
+                            'type': 'POST',
+                            'async': true,
+                            'dataType': 'json',
+                            'data': {
+                                'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+                                'post': {{p.id}}
+                            },
+                            'success': function(data){
+
+                            }
+                        })
+                    }
+                });
+            </script>
+        </post>
+    {% endfor %}
+    {% csrf_token %}
+</centerSide>
+
+{% if page_obj.has_previous %}
+    <a href="?page=1">first</a>
+    <a href="?page={{page_obj.previous_page_number}}">{{page_obj.previous_page_number}}</a>
+{% endif %}
+<a href="?page={{page_obj.page_number}}">{{page_obj.page_number}}</a>
+{% if page_obj.has_next%}
+    <a href="?page={{page_obj.next_page_number}}">{{page_obj.next_page_number}}</a>
+    <a href="?page={{page_obj.paginator.num_pages}}">{{page_obj.paginator.num_pages}}</a>
+{% endif %}
+
+
+{% endblock %}

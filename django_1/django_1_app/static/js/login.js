@@ -7,10 +7,15 @@ function test(){
             'dataType': 'json',
             'data': {
                 'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
-                'name': $('#name').val()
+                'username': $('#id_username').val(),
+                'password': $('#id_password').val()
             },
             'success': function(data){
-                document.getElementById('#pr_name').innerHTML = data['resp'];
+                if (data['ok']) {
+                    window.location.href = '/'
+                } else {
+                    document.getElementById('answer').innerHTML = data['text'];
+                }
             }
         })
     })

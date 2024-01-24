@@ -1,10 +1,56 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+{% block content %}
+
+{% if user %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/static/js/post.js"></script>
+    {% csrf_token %}
+{% endif %}
+
+<centerSide>
+
+    <post id="post">
+        <info style="font-size: 36px;">{{post.name}}</info>
+        <info>{{post.description}}</info>
+        <info style="color: blue;"><a href="/user/{{post.user.id}}">@{{post.user.username}}</a></info>
+    </post>
+
+    {% if post.user.id == user.id %}
+        <post id="postEdit" style="position: absolute; visibility: hidden">
+            {{ form1 }}
+            <input type="submit" id="btn">
+        </post>
+
+        <input type="submit" id="changer" value="Change" style="changer">
+        <script>
+            var post = document.getElementById('post');
+            var postEdit = document.getElementById('postEdit');
+
+            document.getElementById('changer').onclick = function(){
+                if (post.style.visibility === "hidden") {
+                    postEdit.style = "visibility: hidden;";
+                    post.style = "visibility: visible;";
+                postEdit.replaceWith(post);
+                } else {
+                    post.style = "visibility: hidden;";
+                    postEdit.style = "visibility: visible;";
+                post.replaceWith(postEdit);
+                }
+            };
+        </script>
+    {% endif %}
+    <divider>Comments</divider>
+
+    {% if user %}
+        {{ form }}
+        <input type="submit" id="btnCom">
+        <info id="comAnswer"></info>
+    {% endif %}
+
+    {% for c in comments %}
+        <info>{{c.text}}</info>
+    {% endfor %}
+
+</centerSide>
+
+{% endblock %}
