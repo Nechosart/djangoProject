@@ -22,6 +22,7 @@
         {% if user.id %}<a href="/user/{{user.id}}" class="main">{{user.email}}</a>
         {% else %}<a href="/login" class="main">Login</a>
         {% endif %}
+        <a href="/users" class="main">People</a>
     </rightSide>
     {% block content%}
     {% endblock %}
