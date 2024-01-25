@@ -1,7 +1,7 @@
 from django import forms
-from .models import Country, Post, PostEdit, Comment, Message
+from .models import Country, User, Post, PostEdit, Comment, Message
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.contrib.auth.models import User
+#from django.contrib.auth.models import User
 
 
 class CountryForm(forms.ModelForm):

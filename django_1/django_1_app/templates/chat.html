@@ -6,16 +6,22 @@
 
 <centerSide>
 
-<divider>{{talker.username}}</divider>
+    <divider>{{talker.username}}</divider>
 
-{% for m in messages %}
-    <message>{{m.text}}</message>
-{% endfor %}
+    <post style="background-color: white; width: 10%;">
+        {% for m in messages %}
+            {% if m.user.id == user.id %}
+                <message style="float: right; left: 800%">{{m.text}}</message>
+            {% else %}
+                <message style="float: left">{{m.text}}</message>
+            {% endif %}
+        {% endfor %}
 
-{% csrf_token %}
-{{ form }}
-<input type="submit" id="btn">
-<h1 id="resp"></h1>
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" id="btn" style="background-color: rgb(204,204,204)">
+        <h1 id="resp"></h1>
+    </post>
 
 </centerSide>
 

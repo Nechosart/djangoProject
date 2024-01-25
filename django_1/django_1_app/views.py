@@ -58,6 +58,7 @@ class LoginPage(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['title'] = 'Login'
         context['form'] = LoginForm()
         context['user'] = self.request.user
         return context
@@ -102,6 +103,7 @@ class UserView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = User.objects.get(id=kwargs['id'])
+        context['title'] = user.username
         context['person'] = user
         context['posts'] = Post.objects.filter(user=user)
         context['user'] = self.request.user
@@ -121,7 +123,7 @@ def post_create_page(request):
         return redirect('/postCreate')
     else:
         form = PostForm()
-        return render(request, 'postCreate.html', {'user': request.user, 'form': form})
+        return render(request, 'postCreate.html', {'title': 'New post','user': request.user, 'form': form})
 
 
 class PostView(TemplateView):
@@ -130,7 +132,9 @@ class PostView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['user'] = self.request.user
-        context['post'] = Post.objects.get(id=kwargs['id'])
+        post = Post.objects.get(id=kwargs['id'])
+        context['title'] = post.name
+        context['post'] = post
         context['comments'] = Comment.objects.filter(post=kwargs['id'])
         context['form'] = CommentForm()
         context['form1'] = PostEditForm()
@@ -204,9 +208,11 @@ class ChatView(TemplateView):
         if not chat or (chat.user1 != user and chat.user2 != user):
             return redirect('/')
 
+        talker = chat.user2 if chat.user1 == user else chat.user1
+        context['title'] = f'Chat with {talker}'
+        context['talker'] = talker
         context['user'] = user
         context['chat'] = chat
-        context['talker'] = chat.user2 if chat.user1 == user else chat.user1
         context['messages'] = chat.messages.filter(chat=chat.id)
         context['form'] = MessageForm()
         return context

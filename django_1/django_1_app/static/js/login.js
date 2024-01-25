@@ -14,6 +14,7 @@ function test(){
                 if (data['ok']) {
                     window.location.href = '/'
                 } else {
+                    document.getElementById('answer').style = "visibility: visible;";
                     document.getElementById('answer').innerHTML = data['text'];
                 }
             }

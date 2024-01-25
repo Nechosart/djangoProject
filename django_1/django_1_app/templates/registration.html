@@ -1,12 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h1><a href="/login">Login</a></h1>
+<centerSide>
 
-<form method="Post">
-    {% csrf_token %}
-    {{ form }}
-    <input type="submit">
-</form>
+    <a href="/login" class="buttonMove">Login</a>
+
+    <form method="Post">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit">
+    </form>
+
+</centerSide>
 
 {% endblock %}

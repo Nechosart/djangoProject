@@ -1,13 +1,18 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User as UserBase
 
 
 class Country(models.Model):
     name = models.CharField(max_length=32)
 
 
-# class User(AbstractUser):
-#     username = models.CharField('username', max_length=32, unique=True)
+class Notification(models.Model):
+    text = models.CharField(max_length=96)
+    href = models.CharField(max_length=64)
+
+
+class User(UserBase):
+    notifications = models.ManyToManyField(Notification)
 #     email = models.EmailField('email', max_length=64, unique=True)
 #     USERNAME_FIELD = 'email'
 #     year = models.IntegerField('year')

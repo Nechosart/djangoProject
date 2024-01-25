@@ -12,6 +12,7 @@ function comment(){
             },
             'success': function(data){
                 document.getElementById('comAnswer').innerHTML = data['comment'];
+                $('#comAnswer').style.visibility = 'visible';
             }
         })
     })
@@ -34,10 +35,14 @@ function postEdit(){
                 if(data['ok']) {
                     var post = $('#post');
                     var postEdit = $('#postEdit');
-                    post.style = "visibility: visible; position: absolute;";
-                    postEdit.style = "visibility: hidden; position: relative;";
+                    postEdit.style = "visibility: hidden;";
+                    post.style = "visibility: visible;";
+                    postEdit.replaceWith(post);
+
+                    post.innerHTML = 'worked'
                 } else {
                     document.getElementById('post').innerHTML += data['error'];
+                    document.getElementById('post').style = "visibility: visible;";
                 }
             }
         })
