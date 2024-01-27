@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 
 
 class Country(models.Model):
@@ -9,12 +9,13 @@ class Country(models.Model):
 class Notification(models.Model):
     text = models.CharField(max_length=96)
     href = models.CharField(max_length=64)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    #user = models.ForeignKey(User, on_delete=models.CASCADE)
     number = models.IntegerField(default=1)
     new = models.BooleanField(default=True)
 
 
-# class User(AbstractUser):
+class User(AbstractUser):
+    pass
 #     email = models.EmailField('email', max_length=64, unique=True)
 #     USERNAME_FIELD = 'email'
 #     year = models.IntegerField('year')

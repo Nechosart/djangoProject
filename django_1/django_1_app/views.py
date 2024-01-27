@@ -323,8 +323,10 @@ class DirectView(TemplateView):
 def notification_page(request):
     notifications = Notification.objects.filter(user=request.user)
     for n in notifications:
-        n.new = False
-        n.save()
+        if n.new:
+            n.new = False
+            n.save()
+    notifications = reversed(list(notifications))
     return render(request, 'notifications.html',
                   {'title': 'Notifications', 'user': request.user,
                    'notifications': notifications})
@@ -361,53 +363,4 @@ class InterestingView(TemplateView):
             post.save()
         return JsonResponse(True, safe=False)
 
-# def page1(request):
-#     if request.method == 'POST':
-#         data = request.POST
-#         name = data['name']
-#         surname = data['surname']
-#         age = data['age']
-#         dir = Director(name=name, surname=surname, age=age)
-#         dir.save()
-#     return render(request, 'page1.html')
-#
-# def page2(request):
-#     dirs = Director.objects.all()
-#
-#     return render(request, 'page2.html', {'data': dirs})
-#
-# # CRUD - Create Read Update Delete
-# def page3(request):
-#     if request.method == 'POST':
-#         form = FilmForm(request.POST)
-#         if form.is_valid():
-#             name = form.cleaned_data['title']
-#             genre = form.cleaned_data['genre']
-#             year = form.cleaned_data['year']
-#             dir = Director.objects.get(id=1)
-#             film = Film(title=name, genre=genre, year=year, director=dir)
-#             film.save()
-#             return render(request, 'page3.html', {'form': form})
-#     else:
-#         form = FilmForm()
-#         return render(request, 'page3.html', {'form': form})
-#
-#
-# def book_create(request):
-#     if request.method == 'POST':
-#         form = BookForm1(request.POST)
-#         if form.is_valid():
-#             title = form.cleaned_data['title']
-#             year = form.cleaned_data['year']
-#             author = form.cleaned_data['author']
-#             book = Book(title=title, year=year, author=author)
-#             book.save()
-#             return redirect('/create_post')
-#     else:
-#         form = BookForm1()
-#         return render(request, 'page3.html', {'form': form})
-#
-#
-# def  form_page(request):
-#     form = LoginForm()
-#     return render(request, 'page3.html', {'form': form})
+
