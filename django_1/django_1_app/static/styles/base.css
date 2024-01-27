@@ -1,3 +1,7 @@
+body {
+    background: #ffffff;
+}
+
 a {
     text-decoration: none;
     color: black;
@@ -9,6 +13,20 @@ input {
     margin: 0.2vh;
     border-radius: 512px;
     font-size: 4vh;
+}
+
+::-webkit-scrollbar {
+    border-radius: 512px;
+    background: #eee;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 512px;
+    background: #ddd;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #ccc;
 }
 
 .main {

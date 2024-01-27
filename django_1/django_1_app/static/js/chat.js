@@ -1,7 +1,7 @@
 var input = document.getElementById('text');
+document.getElementById('messages').scrollTo(0,999999);
 
 function send(){
-alert('test')
     if ($('#text').val() != '') {
         var button = $(this)
         $.ajax(button.data('url'), {
@@ -19,6 +19,7 @@ alert('test')
                 message.innerHTML = $('#text').val();
                 document.getElementById('messages').appendChild(message);
                 input.value = '';
+                document.getElementById('messages').scrollTo(0,999999);
             }
         })
     }

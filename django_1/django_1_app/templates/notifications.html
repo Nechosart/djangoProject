@@ -5,7 +5,7 @@
     <divider>Notifications</divider>
 
     {% for n in notifications %}
-        <a href="{{n.href}}" class="post" style="display: block">{{n.text}}{% n.number != 1 %} x{{n.number}}{% endif %}</a>
+        <a href="{{n.href}}" class="post" style="display: block">{{n.text}} {% if n.number != 1 %}x{{n.number}}{% endif %}</a>
     {% endfor %}
 </centerSide>
 

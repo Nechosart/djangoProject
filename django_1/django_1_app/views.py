@@ -10,6 +10,7 @@ from django.views.generic.edit import CreateView
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
 
 
 class HomeView(ListView):
@@ -23,10 +24,13 @@ class HomeView(ListView):
         user = self.request.user
         context['user'] = user
         posts = Post.objects.all()
-        for p in posts:
-            p.liked = bool(p.likes.filter(user=user))
+        if user.is_authenticated:
+            for p in posts:
+                p.liked = bool(p.likes.filter(user=user))
+            context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True))
+        else:
+            context['notificationsNum'] = 0
         context['posts'] = posts
-        context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True)) if user else 0
 
         # context['cookie'] = self.request.COOKIES['name']
         return context
@@ -99,7 +103,10 @@ class UsersView(ListView):
         context['title'] = 'People'
         user = self.request.user
         context['user'] = user
-        context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True)) if user else 0
+        if user.is_authenticated:
+            context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True))
+        else:
+            context['notificationsNum'] = 0
         context['users'] = User.objects.all()
         # context['cookie'] = self.request.COOKIES['name']
         return context
@@ -116,7 +123,10 @@ class UserView(TemplateView):
         posts = Post.objects.filter(user=user)
         user = self.request.user
         context['user'] = user
-        context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True)) if user else 0
+        if user.is_authenticated:
+            context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True))
+        else:
+            context['notificationsNum'] = 0
         for p in posts:
             p.liked = bool(p.likes.filter(user=user))
         context['posts'] = posts
@@ -161,7 +171,10 @@ class PostView(TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         context['user'] = user
-        context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True)) if user else 0
+        if user.is_authenticated:
+            context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True))
+        else:
+            context['notificationsNum'] = 0
         post = Post.objects.get(id=kwargs['id'])
         context['title'] = post.name
         context['p'] = post
@@ -242,7 +255,10 @@ class ChatView(TemplateView):
         if not chat or (chat.user1 != user and chat.user2 != user):
             return redirect('/')
         context['user'] = user
-        context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True)) if user else 0
+        if user.is_authenticated:
+            context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True))
+        else:
+            context['notificationsNum'] = 0
 
         talker = chat.user2 if chat.user1 == user else chat.user1
         context['title'] = f'Chat with {talker}'
@@ -254,6 +270,8 @@ class ChatView(TemplateView):
         return context
 
     def post(self, request, **kwargs):
+        #Notification.objects.all().delete()
+
         form = MessageForm(request.POST)
         if form.is_valid():
             chat = Chat.objects.get(id=kwargs['id'])
@@ -262,11 +280,14 @@ class ChatView(TemplateView):
             chat.save()
 
             user = chat.user2 if chat.user1 == self.request.user else chat.user1
-            text = f'Message from {user.username}'
-            notification = Notification.objects.filter(user=user, text=text)
-            if notification:
+            text = f'Message from {self.request.user.username}'
+            notification = list(Notification.objects.filter(user=user))
+            if notification and notification[-1].text == text:
+                print('change')
+                notification = notification[-1]
                 notification.number += 1
             else:
+                print('add')
                 notification = Notification(text=text, href=f'/chat/{chat.id}', user=user)
             notification.save()
 
@@ -287,7 +308,10 @@ class DirectView(TemplateView):
         user = self.request.user
         context['title'] = 'Direct'
         context['user'] = user
-        context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True)) if user else 0
+        if user.is_authenticated:
+            context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True))
+        else:
+            context['notificationsNum'] = 0
         context['chats'] = Chat.objects.filter(user1=user.id) | Chat.objects.filter(user2=user.id)
         return context
 
@@ -314,11 +338,14 @@ class InterestingView(TemplateView):
         context['title'] = 'interesting'
         user = self.request.user
         context['user'] = user
-        context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True)) if user else 0
-        posts = Post.objects.all().order_by('likes')
-        print(posts)
-        #for p in posts:
-            #p.liked = bool(p.likes.filter(user=user))
+        if user.is_authenticated:
+            context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True))
+        else:
+            context['notificationsNum'] = 0
+
+        posts = Post.objects.annotate(l_count=Count('likes')).order_by('-l_count')[:7]
+        for p in posts:
+            p.liked = bool(p.likes.filter(user=user))
         context['posts'] = posts
         return context
 
