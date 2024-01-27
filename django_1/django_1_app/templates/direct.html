@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+
+<centerSide>
+    <divider>Direct</divider>
+
+    {% for c in chats %}
+        <post>
+            {% if c.user1.id == user.id %}<a href="/user/{{c.user2.id}}" class="user">{{c.user2.username}}</a>
+            {% else %}<a href="/user/{{c.user1.id}}" class="user">{{c.user1.username}}</a>{% endif %}
+            <br>
+            <a href="/chat/{{c.id}}" style="font-size: 24px; block-size: 40%">
+                <short>{{c.messages.last.text}}</short>
+            </a>
+        </post>
+    {% endfor %}
+</centerSide>
+
+{% endblock %}

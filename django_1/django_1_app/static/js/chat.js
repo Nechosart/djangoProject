@@ -1,5 +1,8 @@
-function message(){
-    $('#btn').click(function(){
+var input = document.getElementById('text');
+
+function send(){
+alert('test')
+    if ($('#text').val() != '') {
         var button = $(this)
         $.ajax(button.data('url'), {
             'type': 'POST',
@@ -11,10 +14,17 @@ function message(){
                 'text': $('#text').val()
             },
             'success': function(data){
-                //window.alert(data);
+                var message = document.createElement('message')
+                message.style = style="background: rgb(0,255,255);";
+                message.innerHTML = $('#text').val();
+                document.getElementById('messages').appendChild(message);
+                input.value = '';
             }
         })
-    })
+    }
 }
 
-$(document).ready(function(){ message(); })
+$('#btn').click(send)
+input.addEventListener('keypress', function(event) {
+    if (event.key == 'Enter' ) { send(); }
+})

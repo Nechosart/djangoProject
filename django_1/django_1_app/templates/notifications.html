@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+
+<centerSide>
+    <divider>Notifications</divider>
+
+    {% for n in notifications %}
+        <a href="{{n.href}}" class="post" style="display: block">{{n.text}}{% n.number != 1 %} x{{n.number}}{% endif %}</a>
+    {% endfor %}
+</centerSide>
+
+{% endblock %}

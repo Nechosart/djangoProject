@@ -2,25 +2,27 @@
 {% block content %}
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="/static/js/chat.js"></script>
 
 <centerSide>
 
     <divider>{{talker.username}}</divider>
 
-    <post style="background-color: white; width: 10%;">
+    <post style="background-color: white">
+        <p style="margin: 0px; padding:0px; height: 60vh; overflow-y: scroll;" id="messages">
         {% for m in messages %}
-            {% if m.user.id == user.id %}
-                <message style="float: right; left: 800%">{{m.text}}</message>
-            {% else %}
-                <message style="float: left">{{m.text}}</message>
-            {% endif %}
+            <message
+                    {% if m.user.id == user.id %} style="background: rgb(0,255,255);"
+                    {% else %} style="" {% endif %}>
+                {{m.text}}
+            </message>
         {% endfor %}
+        </p>
 
         {% csrf_token %}
         {{ form }}
         <input type="submit" id="btn" style="background-color: rgb(204,204,204)">
         <h1 id="resp"></h1>
+<script src="/static/js/chat.js"></script>
     </post>
 
 </centerSide>

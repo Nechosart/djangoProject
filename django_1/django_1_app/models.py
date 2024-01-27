@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# test 1
 
 class Country(models.Model):
     name = models.CharField(max_length=32)
@@ -10,6 +9,9 @@ class Country(models.Model):
 class Notification(models.Model):
     text = models.CharField(max_length=96)
     href = models.CharField(max_length=64)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    number = models.IntegerField(default=1)
+    new = models.BooleanField(default=True)
 
 
 # class User(AbstractUser):

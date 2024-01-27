@@ -4,34 +4,25 @@ a {
 }
 
 input {
-    font-size: 24px;
     display: block;
-    padding: 4px;
-    border-radius: 12px;
-    margin: 4px;
+    padding: 0.2vh;
+    margin: 0.2vh;
+    border-radius: 512px;
+    font-size: 4vh;
 }
 
 .main {
     position: relative;
-    left: 0%;
-    height: 100%;
     weight: 16%;
-    font-size: 24px;
+    font-size: 4vh;
     display: inline-block;
-    padding: 20px;
-    border-radius: 12px;
-    margin: 4px;
+    padding: 3.2vh;
+    border-radius: 512px;
+    margin: 0.5vh;
 }
 
 .main:hover {
     background: rgb(230, 230, 230);
-}
-
-mainName {
-    position: relative;
-    top: 2%;
-    font-style: "Lucida Console";
-    font-size: 30px;
 }
 
 leftSide {
@@ -53,60 +44,79 @@ rightSide {
 
 post {
     display: block;
+    font-size: 4vh;
     block-size: 40%;
-    padding: 12px;
-    margin: 12px;
+    padding: 3vh;
+    margin: 3vh;
     background-color: rgb(230,230,230);
-    border-radius: 12px;
+    border-radius: 4vh;
+}
+
+.post {
+    font-size: 4vh;
+    block-size: 40%;
+    padding: 3vh;
+    margin: 3vh;
+    background-color: rgb(230,230,230);
+    border-radius: 4vh;
 }
 
 divider {
     display: block;
     block-size: 40%;
-    padding: 12px;
-    margin: 12px;
+    padding: 3vh;
+    margin: 3vh;
     background-color: rgb(204,204,255);
-    border-radius: 12px;
+    border-radius: 4vh;
 }
 
 info {
-    font-size: 24px;
+    font-size: 4vh;
     display: block;
+    margin-top: 1.5vh;
+    word-wrap: break-word;
 }
 
 message {
-    font-size: 24px;
+    font-size: 4vh;
+    word-wrap: break-word;
+    display: block;
     position: relative;
-    display: inline-block;
     background-color: rgb(230,230,230);
-    padding: 9px;
-    margin: 6px;
-    border-radius: 12px;
+    padding: 2.25vh;
+    margin: 3vh;
+    border-radius: 4vh;
     //max-width: 40% - 72px;
 }
 
 error {
     display: inline-block;
-    padding: 12px;
-    margin: 12px;
+    padding: 3vh;
+    margin: 3vh;
     background-color: rgb(255,230,230);
-    border-radius: 12px;
+    border-radius: 4vh;
     color: rgb(255,0,0);
     visibility: hidden;
 }
 
 divider {
-    font-size: 36px;
+    font-size: 6vh;
 }
 
 block {
     position: relative;
 }
 
+short {
+    margin: 0px;
+    padding: 0px;
+}
+
 .like {
-    width: 5%; min-width: 24px;
-    padding: 2%;
+    width: 6%;
+    padding: 1vh;
     border-radius: 20%;
+    float: left;
 }
 
 .like:hover {
@@ -115,9 +125,9 @@ block {
 
 .buttonCreate {
     display: inline-block;
-    padding: 12px;
-    font-size: 24px;
-    border-radius: 12px;
+    font-size: 4vh;
+    padding: 3vh;
+    border-radius: 4vh;
     background-color: rgb(204,255,204);
 }
 
@@ -127,13 +137,22 @@ block {
 
 .buttonMove {
     display: inline-block;
-    padding: 12px;
-    font-size: 24px;
-    border-radius: 12px;
+    padding: 3vh;
+    font-size: 4vh;
+    border-radius: 4vh;
     background-color: rgb(255,255,204);
 }
 
 .buttonMove:hover {
     background-color: rgb(255,255,230);
+}
+
+.user {
+    font-size: 2.6vh;
+    margin-top: 0px;
+    padding-top: 0px;
+    float: left;
+    display: block;
+    color: rgb(127,127,127);
 }
 

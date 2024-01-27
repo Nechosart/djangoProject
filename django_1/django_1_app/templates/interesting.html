@@ -9,17 +9,6 @@
 
 <centerSide>
 
-    <post>
-        <info style="font-size: 36px; font-weight: bold">{{person.username}}</info>
-        {% if person.username == user.username %}
-            <info>{{user.email}}</info>
-            </post>
-            <a href="/logout" class="buttonMove" style="margin-left: 12px">Logout</a>
-        {% else %}
-            </post>
-            <a href="/chatNew/{{person.id}}" class="buttonCreate" style="margin-left: 12px">Send a message</a>
-        {% endif %}
-
     <divider>Posts</divider>
 
     <link rel="preload" as="image" href="/static/like.png">
@@ -58,7 +47,6 @@
                             'dataType': 'json',
                             'data': {
                                 'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
-                                'typeSend': 'like',
                                 'post': {{p.id}}
                             },
                             'success': function(data){

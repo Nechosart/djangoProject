@@ -1,4 +1,4 @@
-from .models import Country, User, Post, Comment, Chat, Message, LikePost, LikeComment
+from .models import Country, User, Post, Comment, Chat, Message, LikePost, LikeComment, Notification
 from django.template.loader import render_to_string
 from django.contrib.auth import authenticate, login
 from django.views.generic.list import ListView
@@ -20,8 +20,14 @@ class HomeView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Instagram'
-        context['posts'] = Post.objects.all()
-        context['user'] = self.request.user
+        user = self.request.user
+        context['user'] = user
+        posts = Post.objects.all()
+        for p in posts:
+            p.liked = bool(p.likes.filter(user=user))
+        context['posts'] = posts
+        context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True)) if user else 0
+
         # context['cookie'] = self.request.COOKIES['name']
         return context
 
@@ -91,8 +97,10 @@ class UsersView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'People'
+        user = self.request.user
+        context['user'] = user
+        context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True)) if user else 0
         context['users'] = User.objects.all()
-        context['user'] = self.request.user
         # context['cookie'] = self.request.COOKIES['name']
         return context
 
@@ -105,9 +113,26 @@ class UserView(TemplateView):
         user = User.objects.get(id=kwargs['id'])
         context['title'] = user.username
         context['person'] = user
-        context['posts'] = Post.objects.filter(user=user)
-        context['user'] = self.request.user
+        posts = Post.objects.filter(user=user)
+        user = self.request.user
+        context['user'] = user
+        context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True)) if user else 0
+        for p in posts:
+            p.liked = bool(p.likes.filter(user=user))
+        context['posts'] = posts
         return context
+
+    def post(self, request, **kwargs):
+        typeSend = request.POST['typeSend']
+        if typeSend == 'like':
+            post = Post.objects.get(id=request.POST['post'])
+            if post.likes.filter(user=request.user):
+                post.likes.get(user=request.user).delete()
+            else:
+                like = LikePost.objects.create(user=request.user)
+                post.likes.add(like)
+            post.save()
+        return JsonResponse(True, safe=False)
 
 
 @login_required
@@ -123,7 +148,10 @@ def post_create_page(request):
         return redirect('/postCreate')
     else:
         form = PostForm()
-        return render(request, 'postCreate.html', {'title': 'New post','user': request.user, 'form': form})
+        user = request.user
+        notificationsNum = len(Notification.objects.filter(user=user, new=True))
+        return render(request, 'postCreate.html', {'title': 'New post', 'user': user,
+                                                   'notificationsNum': notificationsNum, 'form': form})
 
 
 class PostView(TemplateView):
@@ -131,10 +159,12 @@ class PostView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['user'] = self.request.user
+        user = self.request.user
+        context['user'] = user
+        context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True)) if user else 0
         post = Post.objects.get(id=kwargs['id'])
         context['title'] = post.name
-        context['post'] = post
+        context['p'] = post
         context['comments'] = Comment.objects.filter(post=kwargs['id'])
         context['form'] = CommentForm()
         context['form1'] = PostEditForm()
@@ -143,29 +173,33 @@ class PostView(TemplateView):
     def post(self, request, **kwargs):
         post = Post.objects.get(id=kwargs['id'])
         typeSend = request.POST['typeSend']
-        if typeSend == 1:
+
+        if typeSend == 'comment':
             form = CommentForm(request.POST)
             if form.is_valid():
-                comment = Comment(text=form.cleaned_data['text'], user=request.user)
+                comment = Comment.objects.create(text=form.cleaned_data['text'], user=request.user)
                 post.comments.add(comment)
                 post.save()
                 resp = {'ok': True, 'comment': comment.text}
             else:
                 resp = {'ok': False, 'error': 'Error'}
 
-        elif typeSend == 2:
+        elif typeSend == 'postEdit':
             form = PostEditForm(request.POST)
+            print(form)
             if form.is_valid():
-                datas = ['name', 'description']
-                for d in datas:
-                    if form.cleaned_data[d]:
-                        post[d] = form.cleaned_data[d]
+                data = form.cleaned_data
+                if data['name']:
+                    post.name = data['name']
+                if data['description']:
+                    print('desc detected')
+                    post.description = data['description']
                 post.save()
-                resp = {'ok': True}
+                resp = {'ok': True, 'post': (post.name, post.description)}
             else:
                 resp = {'ok': False, 'error': 'Error'}
 
-        elif typeSend == 3:
+        elif typeSend == 'like':
             if LikePost.objects.get(user=request.user):
                 LikePost.objects.get(user=request.user).delete()
             else:
@@ -207,6 +241,8 @@ class ChatView(TemplateView):
         user = self.request.user
         if not chat or (chat.user1 != user and chat.user2 != user):
             return redirect('/')
+        context['user'] = user
+        context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True)) if user else 0
 
         talker = chat.user2 if chat.user1 == user else chat.user1
         context['title'] = f'Chat with {talker}'
@@ -224,13 +260,79 @@ class ChatView(TemplateView):
             message = Message.objects.create(text=form.cleaned_data['text'], chat=chat, user=self.request.user)
             chat.messages.add(message)
             chat.save()
-            resp = f'{message.text}'
+
+            user = chat.user2 if chat.user1 == self.request.user else chat.user1
+            text = f'Message from {user.username}'
+            notification = Notification.objects.filter(user=user, text=text)
+            if notification:
+                notification.number += 1
+            else:
+                notification = Notification(text=text, href=f'/chat/{chat.id}', user=user)
+            notification.save()
+
+            resp = True
         else:
             resp = 'ERROR'
         return JsonResponse(resp, safe=False)
             #post = Post.objects.get(id=kwargs['id'])
             #post.name = data['name']
             #post.save()
+
+
+class DirectView(TemplateView):
+    template_name = 'direct.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context['title'] = 'Direct'
+        context['user'] = user
+        context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True)) if user else 0
+        context['chats'] = Chat.objects.filter(user1=user.id) | Chat.objects.filter(user2=user.id)
+        return context
+
+    def post(self, request, **kwargs):
+        pass
+
+
+@login_required
+def notification_page(request):
+    notifications = Notification.objects.filter(user=request.user)
+    for n in notifications:
+        n.new = False
+        n.save()
+    return render(request, 'notifications.html',
+                  {'title': 'Notifications', 'user': request.user,
+                   'notifications': notifications})
+
+
+class InterestingView(TemplateView):
+    template_name = 'interesting.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'interesting'
+        user = self.request.user
+        context['user'] = user
+        context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True)) if user else 0
+        posts = Post.objects.all().order_by('likes')
+        print(posts)
+        #for p in posts:
+            #p.liked = bool(p.likes.filter(user=user))
+        context['posts'] = posts
+        return context
+
+    def post(self, request, **kwargs):
+        typeSend = request.POST['typeSend']
+        if typeSend == 'like':
+            post = Post.objects.get(id=request.POST['post'])
+            if post.likes.filter(user=request.user):
+                post.likes.get(user=request.user).delete()
+            else:
+                like = LikePost.objects.create(user=request.user)
+                post.likes.add(like)
+            post.save()
+        return JsonResponse(True, safe=False)
 
 # def page1(request):
 #     if request.method == 'POST':

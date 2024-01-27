@@ -10,30 +10,34 @@
 </rightSide>
 
 <centerSide>
+    <link rel="preload" as="image" href="/static/like.png">
+    <link rel="preload" as="image" href="/static/liked.png">
     {% for p in posts %}
         <post>
-            <a href="/post/{{p.id}}" class="post">
-                <p>{{p.name}}</p>
+            <a href="/user/{{p.user.id}}" class="user">{{p.user.username}}</a><br>
+            <a href="/post/{{p.id}}" style="font-size: 24px; block-size: 40%">
+                {{p.name}}<br>
                 <short>{{p.description}}</short>
-            </a><p></p>
-            <img src="/static/like.png" class="like" id="{{p.id}}" style="float:left">
-            <p style="padding-left: 6%;" id="{{p.id}}s">{{p.likes.count}}</p>
-            <script>
-                var like = $('#{{p.id}}');
-                var likes = {{p.likes.count}};
-                var likesEl = $('#{{p.id}}s');
-                likesEl.innerHTML = likes;
+            </a><br>
+            <img src="/static/like{% if p.liked %}d{% endif %}.png" class="like" id="{{p.id}}">
+            <p style="margin: 0px" id="{{p.id}}s">{{p.likes.count}}</p>
 
-                like.click(function(){
+            <script>
+                var like = document.getElementById('{{p.id}}');
+
+                like.onclick = function(){
                     if ({{user.id}}) {
-                        likesEl.innerHTML += 1;
-                        /*
-                        window.alert(likes, likesEl.innerHTML);
-                        if (like.style.backgroundColor == 'white') {
-                            like.style.backgroundColor = 'blue';
+                        var like = document.getElementById('{{p.id}}');
+                        var likesEl = document.getElementById('{{p.id}}s');
+                        var likes = {{p.likes.count}} {% if p.liked %} -1; {% endif %};
+
+                        if (likesEl.innerHTML == likes) {
+                            like.src = '/static/liked.png';
+                            likesEl.innerHTML = likes + 1;
                         } else {
-                            like.style.backgroundColor = 'white';
-                        }*/
+                            like.src = '/static/like.png';
+                            likesEl.innerHTML = likes;
+                        }
 
                         var button = $(this)
                         $.ajax(button.data('url'), {
@@ -49,7 +53,7 @@
                             }
                         })
                     }
-                });
+                };
             </script>
         </post>
     {% endfor %}

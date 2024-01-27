@@ -2,10 +2,10 @@
 {% block content %}
 
 <centerSide>
-    <h2>People</h2>
+    <divider>People</divider>
 
     {% for u in users %}
-        <post><a href="/user/{{u.id}}">{{u.username}}</a></post>
+        <post><a href="/user/{{u.id}}" style="font-size: 4vh">@{{u.username}}</a></post>
     {% endfor %}
 </centerSide>
 

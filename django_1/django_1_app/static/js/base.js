@@ -1,4 +1,4 @@
-var maxLen = 8;
+var maxLen = 30;
 var titles = document.getElementsByTagName("short");
 
 for (i = 0; i < titles.length; i++) {
