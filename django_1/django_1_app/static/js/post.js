@@ -59,7 +59,7 @@ $('#btnEdit').click(function(){
         'async': true,
         'dataType': 'json',
         'data': formData,
-        'precessData': false,
+        'processData': false,
         'contentType': false,
         'success': function(data){
             if(data['ok']) {

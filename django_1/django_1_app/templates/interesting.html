@@ -17,6 +17,7 @@
         <post>
             <a href="/user/{{p.user.id}}" class="user">{{p.user.username}}</a><br>
             <a href="/post/{{p.id}}" style="font-size: 24px; block-size: 40%">
+                {% if p.image != '' %}<img src="{{p.image.name}}" width="100%" class="image">{% endif %}
                 {{p.name}}<br>
                 <short>{{p.description}}</short>
             </a><br>

@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login
 from django.views.generic.list import ListView
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
-from .forms import CountryForm, RegistrationForm, LoginForm, PostForm, PostEditForm, CommentForm, MessageForm
+from .forms import CountryForm, RegistrationForm, LoginForm, UserChangeForm, PostForm, PostEditForm, CommentForm, MessageForm
 from django.views.generic import TemplateView
 from django.views.generic.edit import CreateView
 from django.contrib.auth.views import LoginView, LogoutView
@@ -169,6 +169,7 @@ class UserView(TemplateView):
         for p in posts:
             p.liked = bool(p.likes.filter(user=user))
         context['posts'] = posts
+        context['form'] = UserChangeForm
         return context
 
     def post(self, request, **kwargs):
@@ -187,6 +188,21 @@ class UserView(TemplateView):
                 text = f'{self.request.user.username} has subscribed to your channel'
                 href = f'/user/{self.request.user.id}'
                 new_notification(user, text, href)
+            user.save()
+
+        elif typeSend == 'userEdit':
+            user = User.objects.get(id=kwargs['id'])
+            data = request.POST
+
+            if data.get('username') and not data['username']:
+                print('username')
+                user.username = data['username']
+            if data.get('email') and not data['email']:
+                print('email')
+                user.email = data['email']
+            if self.request.FILES.get('file'):
+                user.image = new_image(self.request.FILES)
+
             user.save()
 
         return JsonResponse(True, safe=False)
@@ -261,23 +277,17 @@ class PostView(TemplateView):
                 resp = {'ok': False, 'error': 'Error'}
 
         elif typeSend == 'postEdit':
-            form = PostEditForm(request.POST)
-            print(form)
-            if form.is_valid():
-                data = form.cleaned_data
-                if data['name']:
-                    post.name = data['name']
-                if data['description']:
-                    print('desc detected')
-                    post.description = data['description']
-                if request.POST['file']:
-                    print('add image')
-                    post.image = new_image(data['file'])
-                post.save()
-                resp = {'ok': True, 'post': (post.name, post.description)}
-            else:
-                print('not work')
-                resp = {'ok': False, 'error': 'Error'}
+            data = request.POST
+
+            if data.get('name'):
+                post.name = data['name']
+            if data.get('description'):
+                post.description = data['description']
+            if self.request.FILES.get('file'):
+                post.image = new_image(self.request.FILES)
+
+            post.save()
+            resp = {'ok': True}
 
         elif typeSend == 'like':
             like_post(request.user, post)

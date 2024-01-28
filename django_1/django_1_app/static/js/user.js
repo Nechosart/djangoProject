@@ -1,19 +1,24 @@
 $('document').ready(function(){
 
-    $('#btnCom').click(function(){
-        var button = $(this)
+    $('#btnEdit').click(function(){
+
+        var formData = new FormData();
+        formData.append('csrfmiddlewaretoken', $('input[name="csrfmiddlewaretoken"]').val())
+        formData.append('typeSend', 'userEdit')
+        formData.append('username', $('#username').val())
+        formData.append('email', $('#email').val())
+        formData.append('file', document.getElementById('file').files[0])
+
+        var button = $(this);
         $.ajax(button.data('url'), {
             'type': 'POST',
             'async': true,
             'dataType': 'json',
-            'data': {
-                'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
-                'typeSend': true,
-                'text': $('#text').val()
-            },
+            'data': formData,
+            'processData': false,
+            'contentType': false,
             'success': function(data){
-                document.getElementById('comAnswer').innerHTML = data['comment'];
-                $('#comAnswer').style.visibility = 'visible';
+                window.location.reload();
             }
         })
     })

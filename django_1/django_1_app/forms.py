@@ -21,6 +21,14 @@ class LoginForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput())
 
 
+class UserChangeForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email']
+        widgets = {'username': forms.TextInput(attrs={'id': 'username'}),
+                   'email': forms.TextInput(attrs={'id': 'email'})}
+
+
 class PostForm(forms.ModelForm):
     class Meta:
         model = Post

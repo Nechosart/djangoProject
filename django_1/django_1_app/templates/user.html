@@ -9,14 +9,41 @@
 
 <centerSide>
 
-    <post>
+    <post id="user">
         <info style="font-size: 6vh; font-weight: bold">{{person.username}}<time>{{person.createdAt}}</time></info>
         <img src="{{user.image}}" width="50%" class="image">
         {% if person.username == user.username %}
             <info>{{user.email}}</info>
             </post>
             <a class="buttonMove" id="subscribers" style="margin-left: 3vh">Subscribers {{person.subscribes.count}}</a>
-            <a href="/logout" class="buttonMove" style="margin-left: 2vh">Logout</a>
+
+
+            <post id="userEdit" style="position: absolute; visibility: hidden">
+                {{ form }}
+                <input type="file" id="file" name="file">
+                <input type="submit" id="btnEdit">
+            </post>
+
+            <p class="buttonMove" style="margin: 0px; margin-left: 3vh" id="changer">Change</p>
+            <a href="/logout" class="special" style="margin-left: 2vh">Logout</a>
+
+            <script>
+                var post = document.getElementById('user');
+                var postEdit = document.getElementById('userEdit');
+
+                document.getElementById('changer').onclick = function(){
+                    if (post.style.visibility === "hidden") {
+                        postEdit.style = "visibility: hidden;";
+                        post.style = "visibility: visible;";
+                        postEdit.replaceWith(post);
+                    } else {
+                        post.style = "visibility: hidden;";
+                        postEdit.style = "visibility: visible;";
+                        post.replaceWith(postEdit);
+                    }
+                };
+            </script>
+
         {% else %}
             </post>
             <a class="buttonMove" id="subscribers" style="margin-left: 3vh">Subscribers {{person.subscribes.count}}</a>
@@ -32,7 +59,7 @@
         <post>
             <a href="/user/{{p.user.id}}" class="user">{{p.user.username}}</a>
             <time>{{p.createdAt}}</time><br>
-        {% if p.image != '' %}<img src="{{p.image.name}}" width="100%" class="image">{% endif %}
+            {% if p.image != '' %}<img src="{{p.image.name}}" width="100%" class="image">{% endif %}
             <a href="/post/{{p.id}}" style="font-size: 24px; block-size: 40%">
                 {{p.name}}<br>
                 <short>{{p.description}}</short>
