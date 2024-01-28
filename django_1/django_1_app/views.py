@@ -28,12 +28,10 @@ def new_image(files):
 def new_notification(user, text, href):
     notification = user.notifications.all()
     if notification and notification.last().text == text:
-        print('change')
         notification = notification.last()
         notification.number += 1
         notification.save()
     else:
-        print('add')
         user.notifications.add(Notification.objects.create(text=text, href=href, user=user))
         user.save()
 
@@ -45,7 +43,7 @@ def like_post(user, post):
         like = LikePost.objects.create(user=user)
         post.likes.add(like)
         if user.id != post.user.id:
-            new_notification(user, f'{user.username} has liked your post', f'/post/{post.id}')
+            new_notification(post.user, f'{user.username} has liked your post', f'/post/{post.id}')
     post.save()
 
 
@@ -85,7 +83,6 @@ class RegistrationView(CreateView):
         response.set_cookie('username', self.object.username)
 
         if self.request.FILES.get('file'):
-            print('exists')
             image = new_image(self.request.FILES)
             user = self.object
             user.image = image
@@ -166,11 +163,11 @@ class UserView(TemplateView):
         context['user'] = user
         if user.is_authenticated:
             context['notificationsNum'] = len(user.notifications.filter(new=True))
+            for p in posts:
+                p.liked = bool(p.likes.filter(user=user))
         else:
             context['notificationsNum'] = 0
 
-        for p in posts:
-            p.liked = bool(p.likes.filter(user=user))
         context['posts'] = posts
         context['form'] = UserChangeForm
         return context
@@ -197,11 +194,9 @@ class UserView(TemplateView):
             user = User.objects.get(id=kwargs['id'])
             data = request.POST
 
-            if data.get('username') and not data['username']:
-                print('username')
+            if data.get('username'):
                 user.username = data['username']
-            if data.get('email') and not data['email']:
-                print('email')
+            if data.get('email'):
                 user.email = data['email']
             if self.request.FILES.get('file'):
                 user.image = new_image(self.request.FILES)
