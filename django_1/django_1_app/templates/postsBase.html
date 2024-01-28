@@ -1,49 +1,53 @@
-
+{% block content1 %}
     <link rel="preload" as="image" href="/static/like.png">
     <link rel="preload" as="image" href="/static/liked.png">
     {% for p in posts %}
         <post>
-            <a href="/user/{{p.user.id}}" class="user">{{p.user.username}}</a><br>
-            <a href="/post/{{p.id}}" style="font-size: 24px; block-size: 40%">
+            <a href="/user/{{m.user.id}}" class="user">{{p.user.username}}</a>
+            <time>{{p.createdAt}}</time><br>
+            <a href="/post/{{p.id}}" style="font-size: 4vh; block-size: 40%">
                 {{p.name}}<br>
                 <short>{{p.description}}</short>
             </a><br>
             <img src="/static/like{% if p.liked %}d{% endif %}.png" class="like" id="{{p.id}}">
             <p style="margin: 0px" id="{{p.id}}s">{{p.likes.count}}</p>
 
-            <script>
-                var like = document.getElementById('{{p.id}}');
-                var likes = {{p.likes.count}};
-                var liked = {% if p.liked %} true; likes -= 1; {% else %} false; {% endif %}
-                var likesEl = document.getElementById('{{p.id}}s');
+            {% if user %}
+                <script>
+                    var like = document.getElementById('{{p.id}}');
 
-                like.onclick = function(){
-                    if ({{user.id}}) {
+                    like.onclick = function(){
+                        if ({{user.id}}) {
+                            var like = document.getElementById('{{p.id}}');
+                            var likesEl = document.getElementById('{{p.id}}s');
+                            var likes = {{p.likes.count}} {% if p.liked %} -1; {% endif %};
 
-                        liked = !liked;
-                        if (liked) {
-                            like.src = '/static/liked.png';
-                            likesEl.innerHTML = likes + 1;
-                        } else {
-                            like.src = '/static/like.png';
-                            likesEl.innerHTML = likes;
-                        }
-
-                        var button = $(this)
-                        $.ajax(button.data('url'), {
-                            'type': 'POST',
-                            'async': true,
-                            'dataType': 'json',
-                            'data': {
-                                'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
-                                'post': {{p.id}}
-                            },
-                            'success': function(data){
-
+                            if (likesEl.innerHTML == likes) {
+                                like.src = '/static/liked.png';
+                                likesEl.innerHTML = likes + 1;
+                            } else {
+                                like.src = '/static/like.png';
+                                likesEl.innerHTML = likes;
                             }
-                        })
-                    }
-                };
-            </script>
+
+                            var button = $(this)
+                            $.ajax(button.data('url'), {
+                                'type': 'POST',
+                                'async': true,
+                                'dataType': 'json',
+                                'data': {
+                                    'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+                                    'typeSend': 'like',
+                                    'post': {{p.id}}
+                                },
+                                'success': function(data){
+
+                                }
+                            })
+                        }
+                    };
+                </script>
+            {% endif %}
         </post>
     {% endfor %}
+{% endblock1 %}

@@ -1,4 +1,4 @@
-from .models import Country, User, Post, Comment, Chat, Message, LikePost, LikeComment, Notification
+from .models import Country, Subscribe, User, Post, Comment, Chat, Message, LikePost, LikeComment, Notification
 from django.template.loader import render_to_string
 from django.contrib.auth import authenticate, login
 from django.views.generic.list import ListView
@@ -8,9 +8,44 @@ from .forms import CountryForm, RegistrationForm, LoginForm, PostForm, PostEditF
 from django.views.generic import TemplateView
 from django.views.generic.edit import CreateView
 from django.contrib.auth.views import LoginView, LogoutView
-from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
+from pathlib import Path
+from django.core.files import File
+
+
+def new_image(files):
+    with open('django_1_app/static/images/number.txt', 'r') as file:
+        number = str(int(file.read()) + 1)
+    with open('django_1_app/static/images/number.txt', 'w') as file:
+        file.write(number)
+    with open(f'django_1_app/static/images/{number}.png', 'wb') as file:
+        file.write(files['file'].read())
+    return f'/static/images/{number}.png'
+
+
+def new_notification(user, text, href):
+    notification = user.notifications.all()
+    if notification and notification.last().text == text:
+        print('change')
+        notification = notification.last()
+        notification.number += 1
+        notification.save()
+    else:
+        print('add')
+        user.notifications.add(Notification.objects.create(text=text, href=href, user=user))
+        user.save()
+
+
+def like_post(user, post):
+    if post.likes.filter(user=user):
+        post.likes.get(user=user).delete()
+    else:
+        like = LikePost.objects.create(user=user)
+        post.likes.add(like)
+        if user.id != post.user.id:
+            new_notification(user, f'{user.username} has liked your post', f'/post/{post.id}')
+    post.save()
 
 
 class HomeView(ListView):
@@ -27,7 +62,7 @@ class HomeView(ListView):
         if user.is_authenticated:
             for p in posts:
                 p.liked = bool(p.likes.filter(user=user))
-            context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True))
+            context['notificationsNum'] = len(user.notifications.filter(new=True))
         else:
             context['notificationsNum'] = 0
         context['posts'] = posts
@@ -36,13 +71,7 @@ class HomeView(ListView):
         return context
 
     def post(self, request, **kwargs):
-        post = Post.objects.get(id=request.POST['post'])
-        if post.likes.filter(user=request.user):
-            post.likes.get(user=request.user).delete()
-        else:
-            like = LikePost.objects.create(user=request.user)
-            post.likes.add(like)
-        post.save()
+        like_post(request.user, Post.objects.get(id=request.POST['post']))
         return JsonResponse(True, safe=False)
 
 
@@ -53,6 +82,14 @@ class RegistrationView(CreateView):
     def get_success_url(self):
         response = HttpResponse()
         response.set_cookie('username', self.object.username)
+
+        if self.request.FILES.get('file'):
+            print('exists')
+            image = new_image(self.request.FILES)
+            user = self.object
+            user.image = image
+            user.save()
+
         login(self.request, self.object)
         return '/'
 
@@ -104,7 +141,7 @@ class UsersView(ListView):
         user = self.request.user
         context['user'] = user
         if user.is_authenticated:
-            context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True))
+            context['notificationsNum'] = len(user.notifications.filter(new=True))
         else:
             context['notificationsNum'] = 0
         context['users'] = User.objects.all()
@@ -120,11 +157,13 @@ class UserView(TemplateView):
         user = User.objects.get(id=kwargs['id'])
         context['title'] = user.username
         context['person'] = user
+        context['subscribers'] = user.subscribes.all()
+        context['subscribed'] = user.subscribes.filter(followerId=self.request.user.id).exists()
         posts = Post.objects.filter(user=user)
         user = self.request.user
         context['user'] = user
         if user.is_authenticated:
-            context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True))
+            context['notificationsNum'] = len(user.notifications.filter(new=True))
         else:
             context['notificationsNum'] = 0
         for p in posts:
@@ -135,13 +174,21 @@ class UserView(TemplateView):
     def post(self, request, **kwargs):
         typeSend = request.POST['typeSend']
         if typeSend == 'like':
-            post = Post.objects.get(id=request.POST['post'])
-            if post.likes.filter(user=request.user):
-                post.likes.get(user=request.user).delete()
+            like_post(request.user, request.POST['post'])
+
+        elif typeSend == 'subscribe':
+            user = User.objects.get(id=kwargs['id'])
+            if user.subscribes.filter(followerId=request.user.id):
+                user.subscribes.get(followerId=request.user.id).delete()
             else:
-                like = LikePost.objects.create(user=request.user)
-                post.likes.add(like)
-            post.save()
+                subscribe = Subscribe.objects.create(followerId=request.user.id)
+                user.subscribes.add(subscribe)
+
+                text = f'{self.request.user.username} has subscribed to your channel'
+                href = f'/user/{self.request.user.id}'
+                new_notification(user, text, href)
+            user.save()
+
         return JsonResponse(True, safe=False)
 
 
@@ -152,14 +199,23 @@ def post_create_page(request):
         if form.is_valid():
             name = form.cleaned_data['name']
             description = form.cleaned_data['description']
-            post = Post(name=name, description=description, user=request.user)
+            user = request.user
+
+            post = Post(name=name, description=description, user=user)
+            if request.FILES.get('file'):
+                post.image = new_image(request.FILES)
             post.save()
+
+            for s in user.subscribes.all():
+                new_notification(User.objects.get(id=s.followerId),
+                                 f'{user.username} published new post!', f'/post/{post.id}')
+
             return redirect('/')
         return redirect('/postCreate')
     else:
         form = PostForm()
         user = request.user
-        notificationsNum = len(Notification.objects.filter(user=user, new=True))
+        notificationsNum = len(user.notifications.filter(new=True))
         return render(request, 'postCreate.html', {'title': 'New post', 'user': user,
                                                    'notificationsNum': notificationsNum, 'form': form})
 
@@ -172,13 +228,13 @@ class PostView(TemplateView):
         user = self.request.user
         context['user'] = user
         if user.is_authenticated:
-            context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True))
+            context['notificationsNum'] = len(user.notifications.filter(new=True))
         else:
             context['notificationsNum'] = 0
         post = Post.objects.get(id=kwargs['id'])
         context['title'] = post.name
         context['p'] = post
-        context['comments'] = Comment.objects.filter(post=kwargs['id'])
+        context['comments'] = reversed(list(post.comments.all()))
         context['form'] = CommentForm()
         context['form1'] = PostEditForm()
         return context
@@ -193,7 +249,14 @@ class PostView(TemplateView):
                 comment = Comment.objects.create(text=form.cleaned_data['text'], user=request.user)
                 post.comments.add(comment)
                 post.save()
-                resp = {'ok': True, 'comment': comment.text}
+
+                if post.user.id != request.user.id:
+                    text = f'Message from {self.request.user.username}'
+                    href = f'/post/{post.id}'
+                    new_notification(post.user, text, href)
+
+                resp = {'ok': True, 'text': comment.text, 'createdAt': comment.createdAt.strftime("%b, %d, %Y, %I%p"),
+                        'user': {'id': comment.user.id, 'username': comment.user.username}}
             else:
                 resp = {'ok': False, 'error': 'Error'}
 
@@ -207,18 +270,17 @@ class PostView(TemplateView):
                 if data['description']:
                     print('desc detected')
                     post.description = data['description']
+                if request.POST['file']:
+                    print('add image')
+                    post.image = new_image(data['file'])
                 post.save()
                 resp = {'ok': True, 'post': (post.name, post.description)}
             else:
+                print('not work')
                 resp = {'ok': False, 'error': 'Error'}
 
         elif typeSend == 'like':
-            if LikePost.objects.get(user=request.user):
-                LikePost.objects.get(user=request.user).delete()
-            else:
-                like = LikePost(user=request.user)
-                post.likes.add(like)
-            post.save()
+            like_post(request.user, post)
             resp = True
 
         return JsonResponse(resp, safe=False)
@@ -256,7 +318,7 @@ class ChatView(TemplateView):
             return redirect('/')
         context['user'] = user
         if user.is_authenticated:
-            context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True))
+            context['notificationsNum'] = len(user.notifications.filter(new=True))
         else:
             context['notificationsNum'] = 0
 
@@ -270,7 +332,7 @@ class ChatView(TemplateView):
         return context
 
     def post(self, request, **kwargs):
-        #Notification.objects.all().delete()
+        Notification.objects.all().delete()
 
         form = MessageForm(request.POST)
         if form.is_valid():
@@ -281,17 +343,11 @@ class ChatView(TemplateView):
 
             user = chat.user2 if chat.user1 == self.request.user else chat.user1
             text = f'Message from {self.request.user.username}'
-            notification = list(Notification.objects.filter(user=user))
-            if notification and notification[-1].text == text:
-                print('change')
-                notification = notification[-1]
-                notification.number += 1
-            else:
-                print('add')
-                notification = Notification(text=text, href=f'/chat/{chat.id}', user=user)
-            notification.save()
+            href = f'/chat/{chat.id}'
+            new_notification(user, text, href)
 
-            resp = True
+            resp = {'text': message.text, 'createdAt': message.createdAt.strftime("%b, %d, %Y, %I%p"),
+                    'user': {'id': message.user.id, 'username': message.user.username}}
         else:
             resp = 'ERROR'
         return JsonResponse(resp, safe=False)
@@ -309,7 +365,7 @@ class DirectView(TemplateView):
         context['title'] = 'Direct'
         context['user'] = user
         if user.is_authenticated:
-            context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True))
+            context['notificationsNum'] = len(user.notifications.filter(new=True))
         else:
             context['notificationsNum'] = 0
         context['chats'] = Chat.objects.filter(user1=user.id) | Chat.objects.filter(user2=user.id)
@@ -321,12 +377,11 @@ class DirectView(TemplateView):
 
 @login_required
 def notification_page(request):
-    notifications = Notification.objects.filter(user=request.user)
-    for n in notifications:
+    notifications = reversed(list(request.user.notifications.all()).copy())
+    for n in request.user.notifications.all():
         if n.new:
             n.new = False
             n.save()
-    notifications = reversed(list(notifications))
     return render(request, 'notifications.html',
                   {'title': 'Notifications', 'user': request.user,
                    'notifications': notifications})
@@ -341,7 +396,7 @@ class InterestingView(TemplateView):
         user = self.request.user
         context['user'] = user
         if user.is_authenticated:
-            context['notificationsNum'] = len(Notification.objects.filter(user=user, new=True))
+            context['notificationsNum'] = len(user.notifications.filter(new=True))
         else:
             context['notificationsNum'] = 0
 

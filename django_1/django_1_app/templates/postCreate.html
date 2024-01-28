@@ -6,9 +6,10 @@
     <divider>New post</divider>
 
     <post>
-        <form method="Post">
+        <form method="Post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form }}
+            <input type="file" id="file" name="file">
             <input type="submit">
         </form>
     </post>

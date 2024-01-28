@@ -11,8 +11,9 @@
         <p style="margin: 0px; padding:0px; height: 60vh; overflow-y: scroll;" id="messages">
         {% for m in messages %}
             <message
-                    {% if m.user.id == user.id %} style="background: rgb(0,255,255);"
-                    {% else %} style="" {% endif %}>
+                    {% if m.user.id == user.id %} style="background: rgb(0,255,255);" {% endif %}>
+                <a href="/user/{{m.user.id}}" class="user">{{m.user.username}}</a>
+                <time>{{m.createdAt}}</time><br>
                 {{m.text}}
             </message>
         {% endfor %}

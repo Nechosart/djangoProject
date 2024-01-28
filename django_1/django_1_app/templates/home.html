@@ -14,19 +14,21 @@
     <link rel="preload" as="image" href="/static/liked.png">
     {% for p in posts %}
         <post>
-            <a href="/user/{{p.user.id}}" class="user">{{p.user.username}}</a><br>
-            <a href="/post/{{p.id}}" style="font-size: 24px; block-size: 40%">
+            <a href="/user/{{p.user.id}}" class="user">{{p.user.username}}</a>
+            <time>{{p.createdAt}}</time><br>
+            {% if p.image != '' %}<img src="{{p.image.name}}" width="100%" class="image">{% endif %}
+            <a href="/post/{{p.id}}" style="font-size: 4vh; block-size: 40%">
                 {{p.name}}<br>
                 <short>{{p.description}}</short>
             </a><br>
             <img src="/static/like{% if p.liked %}d{% endif %}.png" class="like" id="{{p.id}}">
             <p style="margin: 0px" id="{{p.id}}s">{{p.likes.count}}</p>
 
-            <script>
-                var like = document.getElementById('{{p.id}}');
+            {% if user %}
+                <script>
+                    var like = document.getElementById('{{p.id}}');
 
-                like.onclick = function(){
-                    if ({{user.id}}) {
+                    like.onclick = function(){
                         var like = document.getElementById('{{p.id}}');
                         var likesEl = document.getElementById('{{p.id}}s');
                         var likes = {{p.likes.count}} {% if p.liked %} -1; {% endif %};
@@ -52,23 +54,13 @@
 
                             }
                         })
-                    }
-                };
-            </script>
+                    };
+                </script>
+            {% endif %}
         </post>
     {% endfor %}
     {% csrf_token %}
 </centerSide>
-
-{% if page_obj.has_previous %}
-    <a href="?page=1">first</a>
-    <a href="?page={{page_obj.previous_page_number}}">{{page_obj.previous_page_number}}</a>
-{% endif %}
-<a href="?page={{page_obj.page_number}}">{{page_obj.page_number}}</a>
-{% if page_obj.has_next%}
-    <a href="?page={{page_obj.next_page_number}}">{{page_obj.next_page_number}}</a>
-    <a href="?page={{page_obj.paginator.num_pages}}">{{page_obj.paginator.num_pages}}</a>
-{% endif %}
 
 
 {% endblock %}

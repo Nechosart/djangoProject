@@ -12,7 +12,7 @@
         <a href="/search" class="main">Search</a>
         <a href="/interesting" class="main">Interesting</a>
         <a href="/direct" class="main">Messages</a>
-        <a href="/notifications" class="main">Notifications {% if notificationsNum != 0 %} {{notificationsNum}} {% endif %}</a>
+        <a href="/notifications" class="main">Notifications{% if notificationsNum != 0 %}<red>{{notificationsNum}}</red> {% endif %}</a>
         <a href="/postCreate" class="main">Create</a>
         {% if user.id %}<a href="/user/{{user.id}}" class="main">Profile</a>
         {% else %}<a href="/registration" class="main">Register</a>

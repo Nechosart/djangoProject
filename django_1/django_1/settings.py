@@ -179,4 +179,4 @@ EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = 'qqoh uahq cnbp fqxz  '
 EMAIL_USE_TLS = True
 
-
+AUTH_USER_MODEL = 'django_1_app.User'

@@ -8,8 +8,8 @@
         <post>
             {% if c.user1.id == user.id %}<a href="/user/{{c.user2.id}}" class="user">{{c.user2.username}}</a>
             {% else %}<a href="/user/{{c.user1.id}}" class="user">{{c.user1.username}}</a>{% endif %}
-            <br>
-            <a href="/chat/{{c.id}}" style="font-size: 4vh; block-size: 40%">
+            <time>{{c.messages.last.createdAt}}</time><br>
+            <a href="/chat/{{c.id}}">
                 <short>{{c.messages.last.text}}</short>
             </a>
         </post>

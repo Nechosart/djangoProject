@@ -5,9 +5,10 @@
 
     <a href="/login" class="buttonMove" style="margin-top: 12px">Login</a>
 
-    <form method="Post">
+    <form method="Post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form }}
+        <input type="file" id="file" name="file">
         <input type="submit">
     </form>
 

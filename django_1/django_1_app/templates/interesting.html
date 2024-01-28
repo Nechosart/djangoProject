@@ -23,11 +23,11 @@
             <img src="/static/like{% if p.liked %}d{% endif %}.png" class="like" id="{{p.id}}">
             <p style="margin: 0px" id="{{p.id}}s">{{p.likes.count}}</p>
 
-            <script>
-                var like = document.getElementById('{{p.id}}');
+            {% if user %}
+                <script>
+                    var like = document.getElementById('{{p.id}}');
 
-                like.onclick = function(){
-                    if ({{user.id}}) {
+                    like.onclick = function(){
                         var like = document.getElementById('{{p.id}}');
                         var likesEl = document.getElementById('{{p.id}}s');
                         var likes = {{p.likes.count}} {% if p.liked %} -1; {% endif %};
@@ -53,9 +53,9 @@
 
                             }
                         })
-                    }
-                };
-            </script>
+                    };
+                </script>
+            {% endif %}
         </post>
     {% endfor %}
 
