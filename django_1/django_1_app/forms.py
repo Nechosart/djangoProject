@@ -57,3 +57,7 @@ class MessageForm(forms.ModelForm):
         widgets = {'text': forms.TextInput(attrs={'id': 'text'})}
 
 
+class SearchForm(forms.Form):
+    search = forms.CharField(max_length=64)
+
+

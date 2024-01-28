@@ -4,7 +4,6 @@
 {% if user %}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     {% csrf_token %}
-    <script src="/static/js/post.js"></script>
 {% endif %}
 
 <centerSide>
@@ -16,7 +15,7 @@
     {% for p in posts %}
         <post>
             <a href="/user/{{p.user.id}}" class="user">{{p.user.username}}</a><br>
-            <a href="/post/{{p.id}}" style="font-size: 24px; block-size: 40%">
+            <a href="/post/{{p.id}}" style="font-size: 4vh; block-size: 40%">
                 {% if p.image != '' %}<img src="{{p.image.name}}" width="100%" class="image">{% endif %}
                 {{p.name}}<br>
                 <short>{{p.description}}</short>

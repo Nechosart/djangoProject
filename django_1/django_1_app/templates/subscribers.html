@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+
+<centerSide>
+    <divider>People</divider>
+
+    {% for u in users %}
+        <post><a href="/user/{{u.id}}" style="font-size: 4vh">@{{u.username}}</a></post>
+    {% endfor %}
+</centerSide>
+
+{% if page_obj.has_previous %}
+    <a href="?page=1">first</a>
+    <a href="?page={{page_obj.previous_page_number}}">{{page_obj.previous_page_number}}</a>
+{% endif %}
+<a href="?page={{page_obj.page_number}}">{{page_obj.page_number}}</a>
+{% if page_obj.has_next%}
+    <a href="?page={{page_obj.next_page_number}}">{{page_obj.next_page_number}}</a>
+    <a href="?page={{page_obj.paginator.num_pages}}">{{page_obj.paginator.num_pages}}</a>
+{% endif %}
+
+
+{% endblock %}

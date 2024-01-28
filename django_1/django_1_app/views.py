@@ -4,7 +4,8 @@ from django.contrib.auth import authenticate, login
 from django.views.generic.list import ListView
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
-from .forms import CountryForm, RegistrationForm, LoginForm, UserChangeForm, PostForm, PostEditForm, CommentForm, MessageForm
+from .forms import (CountryForm, RegistrationForm, LoginForm, UserChangeForm, PostForm, PostEditForm, CommentForm,
+                    MessageForm, SearchForm)
 from django.views.generic import TemplateView
 from django.views.generic.edit import CreateView
 from django.contrib.auth.views import LoginView, LogoutView
@@ -144,7 +145,7 @@ class UsersView(ListView):
             context['notificationsNum'] = len(user.notifications.filter(new=True))
         else:
             context['notificationsNum'] = 0
-        context['users'] = User.objects.all()
+        context['users'] = User.objects.annotate(s_count=Count('subscribes')).order_by('-s_count')[:7]
         # context['cookie'] = self.request.COOKIES['name']
         return context
 
@@ -159,13 +160,15 @@ class UserView(TemplateView):
         context['person'] = user
         context['subscribers'] = user.subscribes.all()
         context['subscribed'] = user.subscribes.filter(followerId=self.request.user.id).exists()
-        posts = Post.objects.filter(user=user)
+        posts = reversed(list(Post.objects.filter(user=user)))
+
         user = self.request.user
         context['user'] = user
         if user.is_authenticated:
             context['notificationsNum'] = len(user.notifications.filter(new=True))
         else:
             context['notificationsNum'] = 0
+
         for p in posts:
             p.liked = bool(p.likes.filter(user=user))
         context['posts'] = posts
@@ -402,7 +405,6 @@ class InterestingView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'interesting'
         user = self.request.user
         context['user'] = user
         if user.is_authenticated:
@@ -410,9 +412,11 @@ class InterestingView(TemplateView):
         else:
             context['notificationsNum'] = 0
 
+        context['title'] = 'interesting'
+
         posts = Post.objects.annotate(l_count=Count('likes')).order_by('-l_count')[:7]
         for p in posts:
-            p.liked = bool(p.likes.filter(user=user))
+            p.liked = bool(p.likes.filter(user=self.request.user))
         context['posts'] = posts
         return context
 
@@ -427,5 +431,47 @@ class InterestingView(TemplateView):
                 post.likes.add(like)
             post.save()
         return JsonResponse(True, safe=False)
+
+
+@login_required
+def search_page(request):
+    if request.method == 'POST':
+        posts = Post.objects.filter(name__contains=request.POST['search'])
+    else:
+        posts = Post.objects.annotate(l_count=Count('likes')).order_by('-l_count')[:7]
+
+    for p in posts:
+        p.liked = bool(p.likes.filter(user=request.user))
+
+    user = request.user
+    if user.is_authenticated:
+        notificationsNum = len(user.notifications.filter(new=True))
+    else:
+        notificationsNum = 0
+
+    return render(request, 'search.html',
+                  {'title': 'Notifications', 'user': request.user, 'posts': posts,
+                   'notifications': notificationsNum, 'form': SearchForm()})
+
+
+class SubscribersView(ListView):
+    template_name = 'users.html'
+    #context_object_name = 'posts'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'{User.objects.get(id=kwargs['id']).username} subscribers'
+
+        user = self.request.user
+        context['user'] = user
+        if user.is_authenticated:
+            context['notificationsNum'] = len(user.notifications.filter(new=True))
+        else:
+            context['notificationsNum'] = 0
+
+        users = [User.objects.get(id=s.followerId) for s in User.objects.get(id=kwargs['id']).subscribes.all()]
+        context['users'] = users
+        return context
+
 
 

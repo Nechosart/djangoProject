@@ -14,7 +14,9 @@ urlpatterns = [
     path('chat/<int:id>/', login_required(views.ChatView.as_view()), name='chat'),
     path('direct', login_required(views.DirectView.as_view()), name='direct'),
     path('notifications', views.notification_page, name='notification'),
-    path('interesting', views.InterestingView.as_view(), name='interesting')
+    path('interesting', views.InterestingView.as_view(), name='interesting'),
+    path('search', views.search_page, name='search'),
+    path('subscribers/<int:id>', views.SubscribersView.as_view(), name='subscribers')
    # path('chat/', views.ChatView.as_view(), name='chat'),
    # path('history/', views.HistoryView.as_view(), name='history'),
 ]
